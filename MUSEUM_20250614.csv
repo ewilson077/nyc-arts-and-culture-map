@@ -1,6 +1,0 @@
-name,adress1,address2,city,zip,url,tel,the_geom
-Museum of Modern Art,11 W 53rd St,,New York,10019,http://www.moma.org,(212) 708-9400,POINT (-73.9763 40.7614)
-American Museum of Natural History,200 Central Park West,,New York,10024,http://www.amnh.org,(212) 769-5100,POINT (-73.9797 40.7813)
-Metropolitan Museum of Art,1000 5th Ave,,New York,10028,http://www.metmuseum.org,(212) 535-7710,POINT (-73.9632 40.7794)
-Guggenheim Museum,1071 5th Ave,,New York,10128,http://www.guggenheim.org,(212) 423-3500,POINT (-73.9587 40.7829)
-Whitney Museum of American Art,99 Gansevoort St,,New York,10014,http://www.whitney.org,(212) 570-3600,POINT (-74.0089 40.7396)
