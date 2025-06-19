@@ -1,0 +1,8 @@
+The file `data/art_galleries.csv` is intended to contain data about art galleries, including their names, addresses, and geographic coordinates. Below is a sample structure for this CSV file, which you can modify as needed to fit your actual data.
+
+NAME,ADDRESS1,ADDRESS2,CITY,ZIP,TEL,URL,the_geom
+"Gallery 1","123 Art St","Suite 100","New York","10001","123-456-7890","http://gallery1.com","POINT (-73.99 40.73)"
+"Gallery 2","456 Creative Ave","","New York","10002","234-567-8901","http://gallery2.com","POINT (-73.98 40.74)"
+"Gallery 3","789 Design Blvd","Floor 2","New York","10003","345-678-9012","http://gallery3.com","POINT (-73.97 40.75)"
+"Gallery 4","321 Culture Rd","","New York","10004","456-789-0123","http://gallery4.com","POINT (-73.96 40.76)"
+"Gallery 5","654 Artistry Ln","Apt 5B","New York","10005","567-890-1234","http://gallery5.com","POINT (-73.95 40.77)"
