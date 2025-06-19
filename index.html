@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NYC Arts and Culture Guide</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map { height: 600px; }
+    </style>
+</head>
+<body>
+    <h3 align="center"><b>NYC Arts and Culture Guide</b></h3>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-ajax/dist/leaflet.ajax.min.js"></script>
+    <script>
+        var map = L.map('map').setView([40.75, -73.97], 11);
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a> | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19,
+        }).addTo(map);
+
+        // Load borough boundaries
+        var boroughs = new L.GeoJSON.AJAX("data/borough_boundaries_wgs84.geojson", {
+            style: function() {
+                return {
+                    color: "#222222",
+                    weight: 1,
+                    fillColor: "#66b3ff",
+                    fillOpacity: 0.6
+                }; 
+            }
+        }).addTo(map);
+
+        // Load subway routes
+        var subwayRoutes = new L.GeoJSON.AJAX("data/subway_routes.geojson", {
+            style: function(feature) {
+                var lineColors = {
+                    "1": "#EE352E", "2": "#EE352E", "3": "#EE352E",
+                    "4": "#00933C", "5": "#00933C", "6": "#00933C",
+                    "A": "#2850AD", "C": "#2850AD", "E": "#2850AD",
+                    "B": "#FF6319", "D": "#FF6319", "F": "#FF6319", "M": "#FF6319",
+                    "G": "#6CBE45",
+                    "J": "#996633", "Z": "#996633",
+                    "L": "#A7A9AC",
+                    "N": "#FCCC0A", "Q": "#FCCC0A", "R": "#FCCC0A", "W": "#FCCC0A",
+                    "S": "#808183",
+                };
+                var symbol = feature.properties.rt_symbol.trim().toUpperCase();
+                return {
+                    color: lineColors[symbol] || "black",
+                    weight: 3,
+                    opacity: 0.8
+                };
+            },
+            onEachFeature: function(feature, layer) {
+                layer.bindTooltip(feature.properties.rt_symbol);
+            }
+        }).addTo(map);
+
+        // Load museums
+        fetch("data/MUSEUM_20250614.csv")
+            .then(response => response.text())
+            .then(data => {
+                const rows = data.split('\n').slice(1);
+                rows.forEach(row => {
+                    const cols = row.split(',');
+                    const lat = parseFloat(cols[cols.length - 2]);
+                    const lon = parseFloat(cols[cols.length - 1]);
+                    const name = cols[0];
+                    const address1 = cols[1];
+                    const address2 = cols[2] || '';
+                    const city = cols[3];
+                    const zip = cols[4];
+                    const url = cols[5];
+                    const tel = cols[6];
+
+                    L.marker([lat, lon]).addTo(map)
+                        .bindPopup(`<strong>${name}</strong><br>${address1}<br>${address2}<br>${city}, NY ${zip}<br><a href="${url}" target="_blank">Visit Website</a><br>Tel: ${tel}`);
+                });
+            });
+
+        // Load art galleries
+        fetch("data/art_galleries.csv")
+            .then(response => response.text())
+            .then(data => {
+                const rows = data.split('\n').slice(1);
+                rows.forEach(row => {
+                    const cols = row.split(',');
+                    const lat = parseFloat(cols[cols.length - 2]);
+                    const lon = parseFloat(cols[cols.length - 1]);
+                    const name = cols[0];
+                    const address1 = cols[1];
+                    const address2 = cols[2] || '';
+                    const city = cols[3];
+                    const zip = cols[4];
+                    const url = cols[5];
+                    const tel = cols[6];
+
+                    L.marker([lat, lon]).addTo(map)
+                        .bindPopup(`<strong>${name}</strong><br>${address1}<br>${address2}<br>${city}, NY ${zip}<br><a href="${url}" target="_blank">Visit Website</a><br>Tel: ${tel}`);
+                });
+            });
+
+        // Load landmarks
+        fetch("data/landmarks.csv")
+            .then(response => response.text())
+            .then(data => {
+                const rows = data.split('\n').slice(1);
+                rows.forEach(row => {
+                    const cols = row.split(',');
+                    const geom = cols[cols.length - 1]; // Assuming WKT is the last column
+                    const name = cols[0];
+                    const address = cols[1];
+                    const borough = cols[2];
+                    const type = cols[3];
+                    const urlReport = cols[4];
+
+                    const wkt = new Wkt.Wkt();
+                    wkt.read(geom);
+                    const latLng = wkt.toObject().getBounds().getCenter();
+
+                    L.marker([latLng.lat, latLng.lng]).addTo(map)
+                        .bindPopup(`<strong>${name}</strong><br>${address}<br>Borough: ${borough}<br>Type: ${type}<br><a href="${urlReport}" target="_blank">Landmark Report</a>`);
+                });
+            });
+    </script>
+</body>
+</html>
