@@ -32,19 +32,16 @@
     <!-- Wicket -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wicket/1.3.4/wicket.min.js"></script>
 
-    <!-- PapaParse -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-
     <script>
         // Create map
         var map = L.map('map').setView([40.75, -73.97], 11);
 
-        // Base map
+        // Base map layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        // 1️⃣ Borough boundaries with your original styling
+        // Borough boundaries with original styling
         var boroughsLayer = new L.GeoJSON.AJAX("./data/Borough Boundaries.geojson", {
             style: function (feature) {
                 return {
@@ -56,59 +53,61 @@
             }
         }).addTo(map);
 
-        // Function to load and plot CSV points
+        // Function to load CSV and plot points
         function loadCsvPoints(url, iconEmoji, color) {
             fetch(url)
                 .then(res => res.text())
                 .then(text => {
-                    Papa.parse(text, {
-                        header: false,
-                        skipEmptyLines: true,
-                        complete: function(results) {
-                            results.data.forEach(cols => {
-                                if (cols.length < 5) return; // skip bad rows
+                    var rows = text.split("\n").slice(1); // Skip header row
+                    rows.forEach(row => {
+                        if (!row.trim()) return; // Skip empty rows
+                        var cols = row.split(",");
 
-                                const geom = cols[cols.length - 1];
-                                const name = cols[0];
-                                const address = cols[1];
-                                const borough = cols[2];
-                                const type = cols[3];
-                                const urlReport = cols[4];
+                        // Ensure we have enough columns
+                        if (cols.length < 5) return;
 
-                                try {
-                                    const wkt = new Wkt.Wkt();
-                                    wkt.read(geom);
-                                    const latLng = wkt.toObject().getBounds().getCenter();
+                        var name = cols[0];
+                        var address = cols[1];
+                        var borough = cols[2];
+                        var type = cols[3];
+                        var urlReport = cols[4];
+                        var geom = cols[cols.length - 1]; // WKT geometry
 
-                                    L.circleMarker([latLng.lat, latLng.lng], {
-                                        radius: 6,
-                                        color: color,
-                                        fillColor: color,
-                                        fillOpacity: 0.8
-                                    })
-                                    .addTo(map)
-                                    .bindPopup(`${iconEmoji} <strong>${name}</strong><br>${address}<br>Borough: ${borough}<br>Type: ${type}<br><a href="${urlReport}" target="_blank">More Info</a>`);
-                                } catch (err) {
-                                    console.error("Invalid WKT for:", name, err);
-                                }
-                            });
+                        try {
+                            var wkt = new Wkt.Wkt();
+                            wkt.read(geom);
+                            var obj = wkt.toObject();
+
+                            // Get center coordinates if polygon, or coordinates if point
+                            var latLng;
+                            if (obj.getBounds) {
+                                latLng = obj.getBounds().getCenter();
+                            } else {
+                                latLng = obj.getLatLng();
+                            }
+
+                            // Add marker
+                            L.circleMarker([latLng.lat, latLng.lng], {
+                                radius: 6,
+                                color: color,
+                                fillColor: color,
+                                fillOpacity: 0.8
+                            })
+                            .addTo(map)
+                            .bindPopup(`${iconEmoji} <strong>${name}</strong><br>${address}<br>Borough: ${borough}<br>Type: ${type}<br><a href="${urlReport}" target="_blank">More Info</a>`);
+
+                        } catch (err) {
+                            console.error("Invalid WKT for:", name, err);
                         }
                     });
                 });
         }
 
-        // 2️⃣ Landmarks (red)
+        // Load datasets
         loadCsvPoints("./data/landmarks.csv", "🏛", "red");
-
-        // 3️⃣ Museums (green)
         loadCsvPoints("./data/museums.csv", "🖼", "green");
-
-        // 4️⃣ Galleries (purple)
         loadCsvPoints("./data/galleries.csv", "🎨", "purple");
 
     </script>
 </body>
 </html>
-
-
- 
